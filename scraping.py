@@ -5,7 +5,7 @@ import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Set up Splinter
-executable_path = {'executable_path': ChromeDriverManager().install()}
+executable_path = {'executable_path': 'chromedriver.exe'}
 browser = Browser('chrome', **executable_path, headless=False)
 
 # Visit the Mars news site

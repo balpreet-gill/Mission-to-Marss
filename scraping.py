@@ -4,12 +4,15 @@ from bs4 import BeautifulSoup as soup
 import pandas as pd
 import datetime as dt
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
 
 def scrape_all():
     # Initiate headless driver for deployment
+    options = Options()
+    options.binary_location = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
     executable_path = {'executable_path': "chromedriver"}
-    browser = Browser('chrome', **executable_path, headless=True)
+    browser = Browser('chrome', **executable_path, headless=False,chrome_options = options)
 
     news_title, news_paragraph = mars_news(browser)
 
@@ -19,7 +22,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": hemisphere_urls(browser)
     }
 
     # Stop webdriver and return data
@@ -96,6 +100,33 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+def hemisphere_urls(browser): 
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    browser.visit(url)
+
+    hemisphere_image_urls = []
+
+    for i in range(4):
+        hemisphere = {}
+    
+        # browser.find_by_tag("div.description a.itemLink.product-item")[i].click()
+        browser.find_by_tag("a.product-item h3")[i].click()
+        
+        # finding sample image 
+        sample_elem = browser.links.find_by_text('Sample').first
+        hemisphere['img_url'] = sample_elem['href']
+        
+        #title
+        hemisphere['title'] = browser.find_by_css("h2.title").text
+        
+        # Append hemisphere object to list
+        hemisphere_image_urls.append(hemisphere)
+        
+        browser.back()
+    print(hemisphere_image_urls)
+
+    return hemisphere_image_urls
 
 if __name__ == "__main__":
 
